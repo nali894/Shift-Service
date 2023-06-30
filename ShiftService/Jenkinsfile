@@ -1,0 +1,60 @@
+pipeline {
+    environment {
+        MY_CRED = credentials('880866ff-b4a8-418c-a5f1-2674db128d8e')
+      }
+    agent any 
+    stages {
+        stage ('Clean workspace') {
+          steps {
+            cleanWs()
+          }
+        }
+      stage ('Git Checkout') {
+        steps {
+            git branch: 'main', url: 'https://github.com/nali894/Shift-Service.git'
+          }
+        }
+      stage('Clean'){
+        steps{
+            bat "dotnet clean ${workspace}\\ShiftService.sln"
+         }
+       }
+      stage('Restore packages') {
+        steps {
+          bat "dotnet restore ${workspace}\\ShiftService.sln"
+        }
+      }      
+      stage('Build') {
+       steps {
+         bat "dotnet build ${workspace}\\ShiftService.sln --nologo -c Release --no-restore"
+       }
+      }
+      stage('Publish'){
+         steps{
+           bat "dotnet publish ${workspace}\\ShiftService.sln -c Release"
+         }
+      }          
+      stage("Publish to Azure") {
+          steps {
+                withCredentials([azureServicePrincipal(credentialsId: '880866ff-b4a8-418c-a5f1-2674db128d8e',
+                                    subscriptionIdVariable: 'SUBS_ID',
+                                    clientIdVariable: 'CLIENT_ID',
+                                    clientSecretVariable: 'CLIENT_SECRET',
+                                    tenantIdVariable: 'TENANT_ID')]) {
+                    bat 'az login --service-principal -u "d8e851cf-468a-4069-bf3b-2f4f56229bd4" -p "Eeu8Q~ccn45hcgY0zJuTHf7Gf8~Xzw~yKpNkub4n" -t "ce2f43c0-673c-4743-b7a9-272932affdaf"'
+                    bat 'az account set -s "e53d0a45-ea26-45e3-b0e0-519c83d513dc"'
+                    bat 'az resource list'  
+                    zip zipFile: "publish.zip", archive: false, dir: "${workspace}/bin/Release/net7.0/publish/"
+                    bat 'az webapp deploy --resource-group "ShiftServices_group" --name "ShiftServices" --src-path "C:/ProgramData/Jenkins/.jenkins/workspace/Deployment_Shift/publish.zip" --type zip --debug'
+                }     
+              
+              
+          }
+      }
+    }
+    post {
+      always {
+        archiveArtifacts artifacts: '**/*'
+      }
+    }
+}

@@ -1,0 +1,52 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"nginx.ingress.kubernetes.io/cors-allow-headers":"authorization,content-type,Authorization,Content-Type","nginx.ingress.kubernetes.io/cors-allow-methods":"POST,GET,OPTIONS","nginx.ingress.kubernetes.io/cors-allow-origin":"http://*:3000/,http://*:3000,http://localhost:3000/,http://localhost:3000,http://shift.eastus.cloudapp.azure.com,http://shift.eastus.cloudapp.azure.com/,http://shift.eastus.cloudapp.azure.com:3000,http://shift.eastus.cloudapp.azure.com:3000/","nginx.ingress.kubernetes.io/enable-cors":"true","nginx.ingress.kubernetes.io/use-regex":"true"},"creationTimestamp":"2023-05-21T20:49:37Z","generation":7,"name":"ingress-shift","namespace":"default","resourceVersion":"1365100","uid":"5a2c6f64-0b2c-42f7-9d6c-de839a17c9c5"},"spec":{"ingressClassName":"nginx","rules":[{"host":"shift.eastus.cloudapp.azure.com","http":{"paths":[{"backend":{"service":{"name":"shift","port":{"number":3045}}},"path":"/api","pathType":"Prefix"},{"backend":{"service":{"name":"shiftweb","port":{"number":3000}}},"path":"/","pathType":"Prefix"},{"backend":{"service":{"name":"innbox","port":{"number":3045}}},"path":"/api/swagger","pathType":"Prefix"}]}}]},"status":{"loadBalancer":{"ingress":[{"ip":"10.224.0.222"}]}}}
+    nginx.ingress.kubernetes.io/cors-allow-headers: authorization,content-type,Authorization,Content-Type
+    nginx.ingress.kubernetes.io/cors-allow-methods: POST,GET,OPTIONS
+    nginx.ingress.kubernetes.io/cors-allow-origin: http://*:3000/,http://*:3000,http://localhost:3000/,http://localhost:3000,http://shift.eastus.cloudapp.azure.com,http://shift.eastus.cloudapp.azure.com/,http://shift.eastus.cloudapp.azure.com:3000,http://shift.eastus.cloudapp.azure.com:3000/,https://shift.eastus.cloudapp.azure.com,https://shift.eastus.cloudapp.azure.com/,https://shift.eastus.cloudapp.azure.com:3000,https://shift.eastus.cloudapp.azure.com:3000/
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  creationTimestamp: "2023-05-21T20:49:37Z"
+  generation: 11
+  name: ingress-shift
+  namespace: default
+  resourceVersion: "1498154"
+  uid: 5a2c6f64-0b2c-42f7-9d6c-de839a17c9c5
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: shift.eastus.cloudapp.azure.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: shift
+            port:
+              number: 3045
+        path: /api
+        pathType: Prefix
+      - backend:
+          service:
+            name: shiftweb
+            port:
+              number: 3000
+        path: /
+        pathType: Prefix
+      - backend:
+          service:
+            name: shift
+            port:
+              number: 3045
+        path: /api/swagger
+        pathType: Prefix
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.224.0.222

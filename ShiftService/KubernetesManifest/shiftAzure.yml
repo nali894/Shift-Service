@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shift
+  namespace: default
+  labels:
+    app: shift
+spec:
+  ports:
+  - port: 3045
+  selector:
+    app: shift
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shift
+  namespace: default
+  labels:
+    app: shift
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shift
+  template:
+    metadata:
+      labels:
+        app: shift
+    spec:
+      containers:
+      - name: shift
+        image: [IMAGE_SHIFT]
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 3045
+        env:
+        - name: "Database"
+          value: [DB_NAME] 
+        - name: "HostName"
+          value: [DB_HOSTNAME] 
+        - name: "ID"
+          value: [DB_ID] 
+        - name: "Password"
+          value: [DB_PASSWORD] 
+        - name: "Port"
+          value: "3306" 
+        - name: "SslMode"
+          value: [DB_SSLMODE] 
