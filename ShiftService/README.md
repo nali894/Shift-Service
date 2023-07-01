@@ -43,7 +43,7 @@ Clonar este Repositorio con el IDE de Visual Studio (https://learn.microsoft.com
 * Abrir ventana de línea de comandos. En Windows.
 * Navega hasta la carpeta raíz del proyecto que deseas compilar. Usa el comando "cd" para cambiar de directorio. Por ejemplo:
 
-         cd C:\Users\Lenovo\source\repos\ShiftService
+         cd C:\Users\Default\source\repos\ShiftService
          
 * Ejecuta el comando "dotnet build" seguido del nombre del archivo de proyecto:
 
@@ -58,7 +58,7 @@ Clonar este Repositorio con el IDE de Visual Studio (https://learn.microsoft.com
 Abrir Símbolo del sistema cmd de windows
 * Ubicarse en el directorio donde se encuentra el proyecto asp.net clonado, usando el comando "cd". Por ejemplo:
 
-         cd C:\Users\Lenovo\source\repos\Shift-Service\ShiftService
+         cd C:\Users\Default\source\repos\Shift-Service\ShiftService
          
 * Construir la imagen: ejecutar los siguientes comandos
 
@@ -77,9 +77,18 @@ Abrir Símbolo del sistema cmd de windows
 
          docker login <login-server del Azure Container Registry> -u <username del Azure Container Registry> -p <password del Azure Container Registry>
 
+Ejemplo:
+
+         docker login shift.azurecr.io -u admin -p 123
+
 * Asignar nombre de registro de contenedores de Azure:
 
          docker tag <nombre imagen docker desktop> <login-server del Azure Container Registry>/<nombre imagen>:<tag>
+
+  Ejemplo:
+
+         docker tag ShiftService shift.azurecr.io/ShiftService:v1.0
+
 
 * Subir la imagen etiquetada al contenedor de Azure:
 
@@ -89,7 +98,62 @@ Abrir Símbolo del sistema cmd de windows
 ## 6. Despliegue 📦
 
 ### Flujo de trabajo en Azure DevOps:
-* Continuous integration
+
+* Continuous integration (CI)
+
+  ```resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+  jobs:
+  - job: Job_1
+    displayName: Agent job 1
+    pool:
+      vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: DotNetCoreCLI@2
+    displayName: dotnet restore
+    inputs:
+      command: restore
+      projects: $(System.DefaultWorkingDirectory)/*.sln
+  - task: DotNetCoreCLI@2
+    displayName: dotnet build
+    inputs:
+      projects: $(System.DefaultWorkingDirectory)/*.sln
+  - task: DotNetCoreCLI@2
+    displayName: dotnet publish
+    inputs:
+      projects: $(System.DefaultWorkingDirectory)
+  - task: DockerInstaller@0
+    displayName: Install Docker 17.09.0-ce
+  - task: Docker@2
+    displayName: buildAndPush
+    inputs:
+      containerRegistry: c3b26cc3-3d3a-476f-a188-2c23b684ecbb
+      repository: prod_innbox
+      tags: v$(Build.BuildId)
+  - task: PowerShell@2
+    displayName: PowerShell Reemplazar valores Deployments
+    inputs:
+      targetType: inline
+      script: "$yamlPath = \"$(System.DefaultWorkingDirectory)/KubernetesManifest/shiftAzure.yml\"\n\n$newImage = \"shift.azurecr.io/ShiftService:v$(Build.BuildId)\"\n$dbname=\"shift\"\n$hostName=\"dbshift.mysql.database.azure.com\"\n$userID=\"admin\"\n$Password=\"123\"\n$SslMode=\"require\"\n\n\n\n$yamlContent = Get-Content -Path $yamlPath -Raw\n\n$yamlContent = $yamlContent -replace '\\[IMAGE_SHIFT\\]', \"$newImage\"\n$yamlContent = $yamlContent -replace '\\[DB_NAME\\]', \"$dbname\"\n$yamlContent = $yamlContent -replace '\\[DB_HOSTNAME\\]', \"$hostName\"\n$yamlContent = $yamlContent -replace '\\[DB_ID\\]', \"$userID\"\n$yamlContent = $yamlContent -replace '\\[DB_PASSWORD\\]', \"$Password\"\n$yamlContent = $yamlContent -replace '\\[DB_SSLMODE\\]', \"$SslMode\"\n \n$yamlContent | Set-Content -Path $yamlPath\nwrite-host \"$yamlContent\"\n\necho \"$yamlContent\""
+      pwsh: true
+  - task: CopyFiles@2
+    displayName: Copy files
+    inputs:
+      SourceFolder: $(System.DefaultWorkingDirectory)/KubernetesManifest
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      FileCopyOptions: ''
+...
+```
+         
 
          
 
