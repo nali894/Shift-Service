@@ -249,8 +249,34 @@ Abrir Símbolo del sistema cmd de windows
           
 ## 8. Pruebas Automatizadas ⚙️
 
-* Abrir Postman
-* Seleccionar la colección que desea ejecutar > Run Collection
-* En la sección Data > Select File
-* Seleccione el archivo csv que tiene el mismo nombre del método.
-* Ejecutar Colección
+* Crear Archivo CSV con los valores para realizar las pruebas
+
+  Ejemplo:
+
+   | int_ServiceID | str_UserCode |
+   | ------------- | ------------ |
+   | 590           | 12039        |
+   | 601           | 18175        |
+   | 375           | 15144        |
+
+* Crear colección AcceptService en postman adjuntando el archivo CSV para realizar las pruebas
+
+  content-type:application/json;charset=UTF-8
+  
+  POST: localhost:3045/api/Service/AcceptService
+
+          Body:
+          { "intServiceID":{{int_ServiceID}},
+           "strUserCode":"{{str_UserCode}}"
+          }
+
+* Test Postman       
+
+         pm.test("Status code is 200",()=>{pm.response.to.have.status(200)});
+
+         pm.test("Response is 228",()=>{
+              const jsonData = pm.response.json();    
+              pm.expect(228).to.eql(jsonData.code);   
+              pm.expect("The service is accepted").to.eql(jsonData.description);
+         });
+
