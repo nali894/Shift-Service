@@ -77,7 +77,7 @@ Abrir Símbolo del sistema cmd de windows
 
          docker login <login-server del Azure Container Registry> -u <username del Azure Container Registry> -p <password del Azure Container Registry>
 
-Ejemplo:
+  Ejemplo:
 
          docker login shift.azurecr.io -u admin -p 123
 
@@ -99,7 +99,7 @@ Ejemplo:
 
 ### Flujo de trabajo en Azure DevOps:
 
-* Continuous integration (CI)
+* YAML - Continuous Integration (CI)
 
   ```resources:
   repositories:
@@ -134,7 +134,7 @@ Ejemplo:
     displayName: buildAndPush
     inputs:
       containerRegistry: c3b26cc3-3d3a-476f-a188-2c23b684ecbb
-      repository: prod_innbox
+      repository: shiftService
       tags: v$(Build.BuildId)
   - task: PowerShell@2
     displayName: PowerShell Reemplazar valores Deployments
@@ -151,13 +151,51 @@ Ejemplo:
     displayName: 'Publish Artifact: drop'
     inputs:
       FileCopyOptions: ''
-...
-```
+    ...
+  ```
          
+* YAML - Continuous Deployment (CD)
 
-         
+  1- Install Kubectl latest
 
+  ```
+      steps:
+      - task: KubectlInstaller@0
+        displayName: 'Install Kubectl latest'
+  ```     
 
+  2- Login AKS
+
+    ```
+      steps:
+      - task: AzureCLI@2
+        displayName: 'Login AKS'
+        inputs:
+          azureSubscription: 'Azure for Students (c123-abc-def-ghi-jklmnopq)'
+          scriptType: pscore
+          scriptLocation: inlineScript
+          inlineScript: |
+           az aks get-credentials --resource-group shiftdev --name Kubernetes-shift --admin
+      
+           kubectl get nodes
+    ```
+    
+  3- kubectl apply
+
+    ```
+      steps:
+      - task: Kubernetes@1
+        displayName: 'kubectl apply'
+        inputs:
+          connectionType: 'Azure Resource Manager'
+          azureSubscriptionEndpoint: 'Azure for Students (c123-abc-def-ghi-jklmnopq)'
+          azureResourceGroup: dev
+          kubernetesCluster: 'Kubernetes-shift'
+          useClusterAdmin: true
+          command: apply
+          arguments: '-f shiftAzure.yml'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/_Shift-web-CI/drop'    
+    ```
 
 ## 7. Pruebas 🔩
 
