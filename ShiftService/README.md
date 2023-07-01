@@ -40,7 +40,6 @@ Clonar este Repositorio con el IDE de Visual Studio (https://learn.microsoft.com
 
 ## 4. Ejecución
 
-
 * Abrir ventana de línea de comandos. En Windows.
 * Navega hasta la carpeta raíz del proyecto que deseas compilar. Usa el comando "cd" para cambiar de directorio. Por ejemplo:
 
@@ -90,6 +89,9 @@ Abrir Símbolo del sistema cmd de windows
 ## 6. Despliegue 📦
 
 ### Flujo de trabajo en Azure DevOps:
+* Continuous integration
+
+         
 
 
 
